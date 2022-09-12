@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model pgmigrations {
+  id     Int      @id @default(autoincrement())
+  name   String   @db.VarChar(255)
+  run_on DateTime @db.Timestamp(6)
+}
+
+model Portfolio {
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime?     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime?     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  name             String        @db.VarChar(20)
+  description      String?       @db.VarChar(240)
+  color            String?       @db.Char(6)
+  url              String?
+  userId           Int           @map("user_id")
+  pmId             Int?          @map("pm_id")
+  confirmed        Boolean       @default(false)
+  portfolioManager User?         @relation("portfolios_pm_idTousers", fields: [pmId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user             User          @relation("portfolios_user_idTousers", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transactions     Transaction[]
+
+  @@map("portfolios")
+}
+
+model Transaction {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
+  stockName       String    @map("stock_name") @db.VarChar(20)
+  stockSector     String?   @map("stock_sector") @db.VarChar(20)
+  transactionTime DateTime  @map("transaction_time") @db.Timestamptz(6)
+  transactionType String    @map("transaction_type") @db.VarChar(40)
+  numShares       Decimal   @map("num_shares") @db.Decimal
+  price           Decimal   @db.Decimal
+  currency        String    @db.VarChar(4)
+  execution       String    @db.VarChar(20)
+  commissions     Decimal?  @db.Decimal
+  notes           String?
+  portfolioId     Int       @map("portfolio_id")
+  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("transactions")
+}
+
+model User {
+  id                                   Int         @id @default(autoincrement())
+  createdAt                            DateTime?   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                            DateTime?   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  email                                String      @unique @db.VarChar(40)
+  password                             String
+  firstName                            String?     @map("first_name") @db.VarChar(40)
+  lastName                             String?     @map("last_name") @db.VarChar(40)
+  role                                 Role?       @default(investor)
+  isActive                             Boolean     @default(true) @map("is_active")
+  portfolios_portfolios_pm_idTousers   Portfolio[] @relation("portfolios_pm_idTousers")
+  portfolios_portfolios_user_idTousers Portfolio[] @relation("portfolios_user_idTousers")
+
+  @@map("users")
+}
+
+enum Role {
+  investor
+  portfolioManager
+  administrator
+}
