@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
@@ -29,7 +33,7 @@ export class AuthService {
     });
 
     if (userExists) {
-      throw new BadRequestException('email in use');
+      throw new ForbiddenException('email in use');
     }
 
     const hash = await argon.hash(password);
