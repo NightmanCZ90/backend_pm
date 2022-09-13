@@ -78,6 +78,7 @@ describe('AuthService', () => {
     });
 
     it('should sign up user and return access token', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(null);
       prisma.user.create = jest
         .fn()
         .mockReturnValue({ id: 1, email: dto.email });
