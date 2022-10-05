@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 
 import { PrismaService } from '../../prisma/prisma.service';
-import { SignupDto } from './dto';
+import { SigninDto, SignupDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +44,24 @@ export class AuthService {
         password: hash,
       },
     });
+
+    const token = this.signToken(user.id, user.email);
+    return token;
+  }
+
+  async signin({
+    email,
+    password,
+  }: SigninDto): Promise<{ accessToken: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) throw new ForbiddenException('Credentials incorrect');
+
+    const pwMatches = await argon.verify(user.password, password);
+
+    if (!pwMatches) throw new ForbiddenException('Credentials incorrect');
 
     const token = this.signToken(user.id, user.email);
     return token;
