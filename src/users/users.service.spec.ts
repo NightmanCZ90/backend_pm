@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,6 +37,28 @@ describe('UserService', () => {
 
       const returnedUsers = await service.getAllUsers();
       expect(returnedUsers).toEqual(users);
+    });
+  });
+
+  describe('getUserById', () => {
+    it('throws an error if user not found', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.getUserById(1);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('returns back found user', async () => {
+      const user = { id: 1, email: 'email1' };
+      prisma.user.findUnique = jest.fn().mockReturnValue(user);
+
+      const returnedUser = await service.getUserById(1);
+      expect(returnedUser).toEqual(user);
     });
   });
 });
