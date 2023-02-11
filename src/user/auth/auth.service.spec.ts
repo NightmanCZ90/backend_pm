@@ -46,8 +46,9 @@ describe('AuthService', () => {
 
   describe('signToken', () => {
     it('should return access token', async () => {
-      const token = await service.signToken(1, signupDto.email);
-      expect(token).toHaveProperty('accessToken');
+      const tokens = await service.signToken(1, signupDto.email);
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
     });
   });
 
@@ -84,8 +85,9 @@ describe('AuthService', () => {
         .fn()
         .mockReturnValue({ id: 1, email: signupDto.email });
 
-      const token = await service.signup(signupDto);
-      expect(token).toHaveProperty('accessToken');
+      const tokens = await service.signup(signupDto);
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
     });
   });
 
@@ -130,8 +132,19 @@ describe('AuthService', () => {
         password: hash,
       });
 
-      const token = await service.signin(signinDto);
-      expect(token).toHaveProperty('accessToken');
+      const tokens = await service.signin(signinDto);
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
+    });
+  });
+
+  describe('refreshTokens', () => {
+    const user = { userId: 1, email: 'test@test.com' };
+
+    it('returns tokens', async () => {
+      const tokens = await service.refreshTokens(user);
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
     });
   });
 });

@@ -66,14 +66,15 @@ describe('AuthController', () => {
       expect(error).toBeInstanceOf(ForbiddenException);
     });
 
-    it('should sign up user and return access token', async () => {
+    it('should sign up user and return tokens', async () => {
       prisma.user.findUnique = jest.fn().mockReturnValue(null);
       prisma.user.create = jest
         .fn()
         .mockReturnValue({ id: 1, email: signupDto.email });
 
-      const token = await controller.signup(signupDto);
-      expect(token).toHaveProperty('accessToken');
+      const tokens = await controller.signup(signupDto);
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
     });
   });
 
@@ -111,7 +112,7 @@ describe('AuthController', () => {
       expect(error).toBeInstanceOf(ForbiddenException);
     });
 
-    it('should sign in user and return access token', async () => {
+    it('should sign in user and return tokens', async () => {
       const hash = await argon.hash(signinDto.password);
       prisma.user.findUnique = jest.fn().mockReturnValue({
         email: signinDto.email,
@@ -120,6 +121,25 @@ describe('AuthController', () => {
 
       const token = await controller.signin(signinDto);
       expect(token).toHaveProperty('accessToken');
+      expect(token).toHaveProperty('refreshToken');
+    });
+  });
+
+  describe('refresh', () => {
+    it('returns new tokens', async () => {
+      const oldRefreshToken = 'ey12345.123';
+      const payload = {
+        userId: 1,
+        email: 'test@test.com',
+        iat: 1,
+        exp: 1,
+        refreshToken: oldRefreshToken,
+      };
+      
+      const tokens = await controller.refresh(payload);
+      expect(tokens).toHaveProperty('accessToken');
+      expect(tokens).toHaveProperty('refreshToken');
+      expect(tokens.refreshToken).not.toEqual(oldRefreshToken);
     });
   });
 });
