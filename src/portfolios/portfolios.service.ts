@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Portfolio } from '@prisma/client';
+import { UsersPortfolios } from '../common/types/portfolios';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePortfolioDto } from './dtos';
 
@@ -35,5 +36,30 @@ export class PortfoliosService {
     });
 
     return portfolio;
+  }
+
+  async getUsersPortfolios(userId: number): Promise<UsersPortfolios> {
+    const portfolios = await this.prisma.portfolio.findMany({
+      where: {
+        OR: [
+          { userId },
+          { pmId: userId },
+        ],
+      },
+      orderBy: {
+        id: 'asc',
+      },
+      include: {
+        user: true,
+        portfolioManager: true,
+        transactions: true,
+      }
+    });
+
+    const managed = portfolios.filter(portfolio => portfolio.pmId && portfolio.pmId !== userId);
+    const managing = portfolios.filter(portfolio => portfolio.pmId === userId);
+    const personal = portfolios.filter(portfolio => portfolio.userId === userId && !portfolio.pmId);
+
+    return { managed, managing, personal };
   }
 }
