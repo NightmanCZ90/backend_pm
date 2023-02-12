@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
@@ -37,11 +37,22 @@ describe('PortfoliosController', () => {
       investorId: 1,
     };
     const user: Express.User = {
-      userId: 1,
+      userId: 2,
       email: 'test@test.com',
       iat: 1,
       exp: 1,
     };
+
+    it('throws an error if investorId same as userId', async () => {
+
+      let error: Error;
+      try {
+        await controller.createPortfolio({ ...dto, investorId: 2 }, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(BadRequestException);
+    });
 
     it('throws an error if user does not exist', async () => {
       prisma.user.findUnique = jest.fn().mockReturnValue(null);
