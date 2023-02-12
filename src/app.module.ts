@@ -5,6 +5,7 @@ import { AccessTokenStrategy, RefreshTokenStrategy } from './common/strategies';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
+import { PortfoliosModule } from './portfolios/portfolios.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UsersModule } from './users/users.module';
     }),
     PrismaModule,
     UsersModule,
+    PortfoliosModule,
   ],
   providers: [
     AccessTokenStrategy,
