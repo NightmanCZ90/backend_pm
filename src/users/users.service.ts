@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto';
 
@@ -8,11 +9,11 @@ export class UsersService {
     private readonly prisma: PrismaService,
   ) { }
 
-  async getAllUsers() {
+  async getAllUsers(): Promise<User[]> {
     return this.prisma.user.findMany();
   }
 
-  async getUserById(id: number) {
+  async getUserById(id: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { id }
     });
@@ -24,7 +25,8 @@ export class UsersService {
     return user;
   }
 
-  async getCurrentUser(user: Express.User) {
+  async getCurrentUser(user: Express.User): Promise<User> {
+
     const currentUser = await this.prisma.user.findUnique({
       where: { id: user.userId }
     });
@@ -36,7 +38,10 @@ export class UsersService {
     return currentUser;
   }
 
-  async updateUser(id: number, dto: UpdateUserDto) {
+  async updateUser(
+    id: number,
+    dto: UpdateUserDto
+  ): Promise<User> {
     const user = await this.prisma.user.update({
       where: { id },
       data: {
@@ -50,5 +55,17 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  async getUserToConfirm(email: string): Promise<number> {
+    const user = await this.prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user.id;
   }
 }

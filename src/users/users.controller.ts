@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Put, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { Serialize } from '../common/interceptors/serialize.interceptor';
-import { UpdateUserDto } from './dto';
+import { ConfirmUserDto, UpdateUserDto } from './dto';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
@@ -37,6 +37,7 @@ export class UsersController {
   }
 
   @Put(':id')
+  @HttpCode(HttpStatus.OK)
   updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserDto,
@@ -46,5 +47,13 @@ export class UsersController {
       throw new UnauthorizedException('Cannot update another user.');
     }
     return this.usersService.updateUser(id, dto);
+  }
+
+  @Post('confirm')
+  @HttpCode(HttpStatus.OK)
+  getUserToConfirm(
+    @Body() dto: ConfirmUserDto
+  ) {
+    return this.usersService.getUserToConfirm(dto.email);
   }
 }
