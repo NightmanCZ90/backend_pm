@@ -22,4 +22,16 @@ export class UsersService {
 
     return user;
   }
+
+  async getCurrentUser(user: Express.User) {
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: user.userId }
+    });
+
+    if (!currentUser) {
+      throw new NotFoundException();
+    }
+
+    return currentUser;
+  }
 }

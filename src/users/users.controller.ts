@@ -1,4 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { UsersService } from './users.service';
 
@@ -12,6 +13,14 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   getAllUsers() {
     return this.usersService.getAllUsers();
+  }
+
+  @Get('current')
+  @HttpCode(HttpStatus.OK)
+  getCurrentUser(
+    @CurrentUser() user: Express.User
+  ) {
+    return this.usersService.getCurrentUser(user);
   }
 
   // TODO: Guard for Admin and Current user
