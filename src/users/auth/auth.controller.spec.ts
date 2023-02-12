@@ -134,7 +134,6 @@ describe('AuthController', () => {
         email: 'test@test.com',
         iat: 1,
         exp: 1,
-        refreshToken: oldRefreshToken,
       };
       
       const tokens = await controller.refresh(payload);
