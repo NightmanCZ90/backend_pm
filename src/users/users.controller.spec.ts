@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Role } from '../common/types/user';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateUserDto } from './dto';
+import { ConfirmUserDto, UpdateUserDto } from './dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
@@ -97,14 +97,14 @@ describe('UserController', () => {
       firstName: 'Anakin',
       lastName: 'Skywalker',
       role: Role.Administrator,
-    }
+    };
 
     const currentUser: Express.User = {
       userId: 1,
       email: 'anakin@test.com',
       iat: 1,
       exp: 1,
-    }
+    };
 
     it('throws an error if userId not same as param id', async () => {
       prisma.user.update = jest.fn().mockReturnValue(null);
@@ -135,6 +135,31 @@ describe('UserController', () => {
 
       const user = await controller.updateUser(1, dto, currentUser);
       expect(user).toEqual(dto);
+    });
+  });
+
+  describe('getUserToConfirm', () => {
+    const dto: ConfirmUserDto = {
+      email: 'test1@test.com',
+    };
+
+    it('throws an error if user not found', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await controller.getUserToConfirm(dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('returns user id', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
+
+      const userId = await controller.getUserToConfirm(dto);
+      expect(userId).toEqual(1);
     });
   });
 });

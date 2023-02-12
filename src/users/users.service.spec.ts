@@ -34,7 +34,7 @@ describe('UserService', () => {
       const users = [
         { id: 1, email: 'email1' },
         { id: 2, email: 'email2' }
-      ]
+      ];
       prisma.user.findMany = jest.fn().mockReturnValue(users);
 
       const returnedUsers = await service.getAllUsers();
@@ -98,7 +98,7 @@ describe('UserService', () => {
       firstName: 'Anakin',
       lastName: 'Skywalker',
       role: Role.Administrator,
-    }
+    };
 
     it('throws an error if user not found', async () => {
       prisma.user.update = jest.fn().mockReturnValue(null);
@@ -117,6 +117,27 @@ describe('UserService', () => {
 
       const user = await service.updateUser(1, dto);
       expect(user).toEqual(dto);
+    });
+  });
+
+  describe('getUserToConfirm', () => {
+    it('throws an error if user not found', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.getUserToConfirm('test1@test.com');
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('returns user id', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
+
+      const userId = await service.getUserToConfirm('test1@test.com');
+      expect(userId).toEqual(1);
     });
   });
 });
