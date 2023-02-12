@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerMiddleware } from './common/middlewares';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './common/strategies';
 
 import { PrismaModule } from './prisma/prisma.module';
@@ -18,4 +19,11 @@ import { UserModule } from './user/user.module';
     RefreshTokenStrategy
   ]
 })
-export class AppModule {}
+export class AppModule {
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(
+      LoggerMiddleware, // TODO: disable in production
+    ).forRoutes('*');
+  }
+}
