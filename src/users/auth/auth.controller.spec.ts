@@ -31,6 +31,7 @@ describe('AuthController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+    expect(prisma).toBeDefined();
   });
 
   const signupDto: SignupDto = {
@@ -133,7 +134,6 @@ describe('AuthController', () => {
         email: 'test@test.com',
         iat: 1,
         exp: 1,
-        refreshToken: oldRefreshToken,
       };
       
       const tokens = await controller.refresh(payload);

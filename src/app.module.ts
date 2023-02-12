@@ -4,7 +4,7 @@ import { LoggerMiddleware } from './common/middlewares';
 import { AccessTokenStrategy, RefreshTokenStrategy } from './common/strategies';
 
 import { PrismaModule } from './prisma/prisma.module';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { UserModule } from './user/user.module';
       isGlobal: true,
     }),
     PrismaModule,
-    UserModule,
+    UsersModule,
   ],
   providers: [
     AccessTokenStrategy,
