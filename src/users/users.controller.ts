@@ -1,7 +1,8 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Put, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { Serialize } from '../common/interceptors/serialize.interceptor';
+import { UpdateUserDto } from './dto';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
@@ -33,5 +34,17 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.usersService.getUserById(id);
+  }
+
+  @Put(':id')
+  updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() user: Express.User
+  ) {
+    if (id !== user.userId) {
+      throw new UnauthorizedException('Cannot update another user.');
+    }
+    return this.usersService.updateUser(id, dto);
   }
 }
