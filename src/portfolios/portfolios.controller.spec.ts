@@ -74,4 +74,40 @@ describe('PortfoliosController', () => {
       expect(portfolio).toEqual(dto);
     });
   });
+
+  describe('getUsersPortfolios', () => {
+    const user: Express.User = {
+      userId: 1,
+      email: 'test@test.com',
+      iat: 1,
+      exp: 1,
+    };
+    it('returns object with empty arrays if no portfolios found', async () => {
+      prisma.portfolio.findMany = jest.fn().mockReturnValue([]);
+
+      const portfolios = await controller.getUsersPortfolios(user);
+      expect(portfolios).toEqual({ managed: [], managing: [], personal: [] });
+    });
+
+    it('returns separated portfolios', async () => {
+      const userId = 1;
+      const managed = [
+        { userId, pmId: 2 },
+        { userId, pmId: 3 },
+      ];
+      const managing = [
+        { userId: 2, pmId: userId },
+        { userId: 3, pmId: userId },
+      ];
+      const personal = [
+        { userId },
+        { userId },
+      ];
+
+      prisma.portfolio.findMany = jest.fn().mockReturnValue([...managed, ...managing, ...personal]);
+
+      const portfolios = await controller.getUsersPortfolios(user);
+      expect(portfolios).toEqual({ managed, managing, personal });
+    });
+  });
 });
