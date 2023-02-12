@@ -1,7 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Role } from '../common/types/user';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateUserDto } from './dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
@@ -88,6 +90,33 @@ describe('UserService', () => {
 
       const returnedUser = await service.getUserById(1);
       expect(returnedUser).toEqual(currentUser);
+    });
+  });
+
+  describe('updateUser', () => {
+    const dto: UpdateUserDto = {
+      firstName: 'Anakin',
+      lastName: 'Skywalker',
+      role: Role.Administrator,
+    }
+
+    it('throws an error if user not found', async () => {
+      prisma.user.update = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.updateUser(1, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('returns updated user', async () => {
+      prisma.user.update = jest.fn().mockReturnValue(dto);
+
+      const user = await service.updateUser(1, dto);
+      expect(user).toEqual(dto);
     });
   });
 });
