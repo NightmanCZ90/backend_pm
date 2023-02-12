@@ -61,4 +61,32 @@ describe('UserController', () => {
       expect(returnedUser).toEqual(user);
     });
   });
+
+  describe('getCurrentUser', () => {
+    const currentUser = {
+      userId: 1,
+      email: 'test@test.com',
+      iat: 1,
+      exp: 1,
+    };
+
+    it('throws an error if current user not found', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await controller.getCurrentUser(currentUser);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('returns back current user', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(currentUser);
+
+      const returnedUser = await controller.getUserById(1);
+      expect(returnedUser).toEqual(currentUser);
+    });
+  });
 });
