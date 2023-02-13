@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Portfolio } from '@prisma/client';
-import { UsersPortfolios } from '../common/types/portfolios';
+import { ExtendedPortfolio, UsersPortfolios } from '../common/types/portfolios';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePortfolioDto } from './dtos';
+
+const userWithoutPassword = {
+  id: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  isActive: true,
+}
 
 @Injectable()
 export class PortfoliosService {
@@ -50,24 +58,8 @@ export class PortfoliosService {
         id: 'asc',
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            isActive: true,
-          }
-        },
-        portfolioManager: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            isActive: true,
-          }
-        },
+        user: { select: userWithoutPassword },
+        portfolioManager: { select: userWithoutPassword },
         transactions: true,
       }
     });
@@ -77,5 +69,29 @@ export class PortfoliosService {
     const personal = portfolios.filter(portfolio => portfolio.userId === userId && !portfolio.pmId);
 
     return { managed, managing, personal };
+  }
+
+  async getPortfolio(
+    portfolioId: number,
+    userId: number,
+  ): Promise<ExtendedPortfolio> {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: portfolioId },
+      include: {
+        user: { select: userWithoutPassword },
+        portfolioManager: { select: userWithoutPassword },
+        transactions: true,
+      }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException();
+    }
+
+    if (portfolio.userId !== userId && portfolio.pmId !== userId) {
+      throw new UnauthorizedException("You don't have permission to receive this portfolio.");
+    }
+
+    return portfolio;
   }
 }
