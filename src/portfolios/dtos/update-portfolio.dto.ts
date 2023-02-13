@@ -1,4 +1,4 @@
-import { IsHexColor, IsNotEmpty, IsNumber, IsOptional, IsString, Length } from "class-validator";
+import { IsHexColor, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
 
 export class UpdatePortfolioDto {
   @IsString()
