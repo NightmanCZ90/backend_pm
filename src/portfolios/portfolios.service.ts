@@ -223,4 +223,38 @@ export class PortfoliosService {
 
     return linkedPortfolio;
   }
+
+  async unlinkPortfolio(
+    portfolioId: number,
+    userId: number,
+  ): Promise<ExtendedPortfolio> {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException('Portfolio with this id does not exist.');
+    }
+
+    if (portfolio.pmId !== userId) {
+      throw new UnauthorizedException("You don't have permission to unlink this portfolio.");
+    }
+
+    const unlinkedPortfolio = await this.prisma.portfolio.update({
+      where: { id: portfolioId },
+      data: {
+        updatedAt: new Date(),
+        confirmed: true,
+        userId: userId,
+        pmId: null,
+      },
+      include: {
+        user: { select: userWithoutPassword },
+        portfolioManager: { select: userWithoutPassword },
+        transactions: true,
+      }
+    });
+
+    return unlinkedPortfolio;
+  }
 }

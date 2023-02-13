@@ -78,4 +78,13 @@ export class PortfoliosController {
   ) {
     return this.portfoliosService.linkPortfolio(id, user.userId, dto.email);
   }
+
+  @Patch(':id/unlink')
+  @HttpCode(HttpStatus.OK)
+  unlinkPortfolio(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: Express.User,
+  ) {
+    return this.portfoliosService.unlinkPortfolio(id, user.userId);
+  }
 }
