@@ -2,6 +2,7 @@ import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatu
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dtos';
+import { LinkPortfolioDto } from './dtos/link-portfolio.dto';
 import { PortfoliosService } from './portfolios.service';
 
 @UseGuards(JwtGuard)
@@ -66,5 +67,15 @@ export class PortfoliosController {
     @CurrentUser() user: Express.User,
   ) {
     return this.portfoliosService.confirmPortfolio(id, user.userId);
+  }
+
+  @Patch(':id/link')
+  @HttpCode(HttpStatus.OK)
+  linkPortfolio(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: Express.User,
+    @Body() dto: LinkPortfolioDto,
+  ) {
+    return this.portfoliosService.linkPortfolio(id, user.userId, dto.email);
   }
 }

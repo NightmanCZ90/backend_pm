@@ -180,4 +180,47 @@ export class PortfoliosService {
 
     return confirmedPortfolio;
   }
+
+  async linkPortfolio(
+    portfolioId: number,
+    userId: number,
+    email: string,
+  ): Promise<ExtendedPortfolio> {
+    const investor = await this.prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!investor) {
+      throw new NotFoundException('User with this email does not exist.');
+    }
+
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException('Portfolio with this id does not exist.');
+    }
+
+    if (portfolio.userId !== userId) {
+      throw new UnauthorizedException("You don't have permission to link this portfolio.");
+    }
+
+    const linkedPortfolio = await this.prisma.portfolio.update({
+      where: { id: portfolioId },
+      data: {
+        updatedAt: new Date(),
+        confirmed: false,
+        userId: investor.id,
+        pmId: userId,
+      },
+      include: {
+        user: { select: userWithoutPassword },
+        portfolioManager: { select: userWithoutPassword },
+        transactions: true,
+      }
+    });
+
+    return linkedPortfolio;
+  }
 }
