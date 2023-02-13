@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException, UnauthorizedException } from '@
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePortfolioDto } from './dtos';
+import { CreatePortfolioDto, UpdatePortfolioDto } from './dtos';
 import { PortfoliosController } from './portfolios.controller';
 import { PortfoliosService } from './portfolios.service';
 
@@ -145,6 +145,56 @@ describe('PortfoliosController', () => {
 
       const portfolio = await controller.getPortfolio(portfolioId, user);
       expect(portfolio).toEqual({ userId: 2, pmId: user.userId });
+    });
+  });
+
+  describe('updatePortfolio', () => {
+    const portfolioId = 1;
+    const dto: UpdatePortfolioDto = {
+      name: 'degiro',
+      description: '',
+      color: 'FFFFFF',
+      url: '',
+    };
+
+    it('throws an error if portfolio not found', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await controller.updatePortfolio(portfolioId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to update the portfolio', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: 2 });
+
+      let error: Error;
+      try {
+        await controller.updatePortfolio(portfolioId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('updates portfolio if user is its investor', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: user.userId, pmId: 2 });
+      prisma.portfolio.update = jest.fn().mockReturnValue(dto);
+
+      const portfolio = await controller.updatePortfolio(portfolioId, user, dto);
+      expect(portfolio).toEqual(dto);
+    });
+
+    it('updates portfolio if user is its portfolio manager', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: user.userId });
+      prisma.portfolio.update = jest.fn().mockReturnValue(dto);
+
+      const portfolio = await controller.updatePortfolio(portfolioId, user, dto);
+      expect(portfolio).toEqual(dto);
     });
   });
 
