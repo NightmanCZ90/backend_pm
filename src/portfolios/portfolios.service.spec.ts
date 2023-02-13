@@ -270,4 +270,59 @@ describe('PortfoliosService', () => {
       expect(portfolio).toEqual(testPortfolio);
     });
   });
+
+  describe('linkPortfolio', () => {
+    const portfolioId = 1;
+    const userId = 1;
+    const email = 'test1@test.com';
+
+    it('throws an error if investor not found', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue(null);
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: null, pmId: null });
+
+      let error: Error;
+      try {
+        await service.linkPortfolio(portfolioId, userId, email);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if portfolio not found', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 2 });
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.linkPortfolio(portfolioId, userId, email);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to link the portfolio', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 2 });
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 3 });
+
+      let error: Error;
+      try {
+        await service.linkPortfolio(portfolioId, userId, email);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('returns linked portfolio', async () => {
+      const testPortfolio = { userId: 2, pmId: userId };
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 2 });
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId });
+      prisma.portfolio.update = jest.fn().mockReturnValue(testPortfolio);
+
+      const portfolio = await service.linkPortfolio(portfolioId, userId, email);
+      expect(portfolio).toEqual(testPortfolio);
+    });
+  });
 });
