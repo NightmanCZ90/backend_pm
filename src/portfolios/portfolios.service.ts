@@ -50,8 +50,24 @@ export class PortfoliosService {
         id: 'asc',
       },
       include: {
-        user: true,
-        portfolioManager: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            isActive: true,
+          }
+        },
+        portfolioManager: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            isActive: true,
+          }
+        },
         transactions: true,
       }
     });

@@ -1,8 +1,8 @@
 import { Portfolio, Transaction, User } from "@prisma/client"
 
 export interface ExtendedPortfolio extends Portfolio {
-  portfolioManager: User;
-  user: User;
+  portfolioManager: Partial<User>;
+  user: Partial<User>;
   transactions: Transaction[];
 }
 
