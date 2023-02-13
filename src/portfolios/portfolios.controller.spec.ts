@@ -249,4 +249,41 @@ describe('PortfoliosController', () => {
       expect(error).toEqual(undefined);
     });
   });
+
+  describe('updatePortfolio', () => {
+    const portfolioId = 1;
+
+    it('throws an error if portfolio not found', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await controller.confirmPortfolio(portfolioId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to confirm the portfolio', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2 });
+
+      let error: Error;
+      try {
+        await controller.confirmPortfolio(portfolioId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('confirms portfolio if user is its investor', async () => {
+      const testPortfolio = { userId: user.userId };
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(testPortfolio);
+      prisma.portfolio.update = jest.fn().mockReturnValue(testPortfolio);
+
+      const portfolio = await controller.confirmPortfolio(portfolioId, user);
+      expect(portfolio).toEqual(testPortfolio);
+    });
+  });
 });
