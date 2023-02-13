@@ -148,4 +148,36 @@ export class PortfoliosService {
       where: { id: portfolioId }
     });
   }
+
+  async confirmPortfolio(
+    portfolioId: number,
+    userId: number,
+  ): Promise<ExtendedPortfolio> {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException();
+    }
+
+    if (portfolio.userId !== userId) {
+      throw new UnauthorizedException("You don't have permission to confirm this portfolio.");
+    }
+
+    const confirmedPortfolio = await this.prisma.portfolio.update({
+      where: { id: portfolioId },
+      data: {
+        updatedAt: new Date(),
+        confirmed: true,
+      },
+      include: {
+        user: { select: userWithoutPassword },
+        portfolioManager: { select: userWithoutPassword },
+        transactions: true,
+      }
+    });
+
+    return confirmedPortfolio;
+  }
 }
