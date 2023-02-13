@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
@@ -83,6 +83,49 @@ describe('PortfoliosService', () => {
 
       const portfolios = await service.getUsersPortfolios(userId);
       expect(portfolios).toEqual({ managed, managing, personal });
+    });
+  });
+
+  describe('getPortfolio', () => {
+    const portfolioId = 1;
+    const userId = 1;
+
+    it('throws an error if portfolio not found', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.getPortfolio(portfolioId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to use the portfolio', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: 2 });
+
+      let error: Error;
+      try {
+        await service.getPortfolio(portfolioId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('returns portfolio if user is its investor', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId, pmId: 2 });
+
+      const portfolio = await service.getPortfolio(portfolioId, userId);
+      expect(portfolio).toEqual({ userId, pmId: 2 });
+    });
+
+    it('returns portfolio if user is its portfolio manager', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: userId });
+
+      const portfolio = await service.getPortfolio(portfolioId, userId);
+      expect(portfolio).toEqual({ userId: 2, pmId: userId });
     });
   });
 });
