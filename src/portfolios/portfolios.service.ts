@@ -94,4 +94,25 @@ export class PortfoliosService {
 
     return portfolio;
   }
+
+  async deletePortfolio(
+    portfolioId: number,
+    userId: number,
+  ): Promise<void> {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException();
+    }
+
+    if (portfolio.userId !== userId && portfolio.pmId !== userId) {
+      throw new UnauthorizedException("You don't have permission to delete this portfolio.");
+    }
+
+    await this.prisma.portfolio.delete({
+      where: { id: portfolioId }
+    });
+  }
 }

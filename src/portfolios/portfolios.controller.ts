@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { CreatePortfolioDto } from './dtos';
@@ -38,5 +38,14 @@ export class PortfoliosController {
     @CurrentUser() user: Express.User,
   ) {
     return this.portfoliosService.getPortfolio(id, user.userId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deletePortfolio(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: Express.User,
+  ) {
+    return this.portfoliosService.deletePortfolio(id, user.userId);
   }
 }
