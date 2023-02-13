@@ -233,7 +233,7 @@ describe('PortfoliosService', () => {
     });
   });
 
-  describe('updatePortfolio', () => {
+  describe('confirmPortfolio', () => {
     const portfolioId = 1;
     const userId = 1;
 

@@ -250,7 +250,7 @@ describe('PortfoliosController', () => {
     });
   });
 
-  describe('updatePortfolio', () => {
+  describe('confirmPortfolio', () => {
     const portfolioId = 1;
 
     it('throws an error if portfolio not found', async () => {
