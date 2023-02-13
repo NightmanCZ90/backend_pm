@@ -263,6 +263,7 @@ describe('PortfoliosService', () => {
 
     it('confirms portfolio if user is its investor', async () => {
       const testPortfolio = { userId };
+
       prisma.portfolio.findUnique = jest.fn().mockReturnValue(testPortfolio);
       prisma.portfolio.update = jest.fn().mockReturnValue(testPortfolio);
 
@@ -317,11 +318,51 @@ describe('PortfoliosService', () => {
 
     it('returns linked portfolio', async () => {
       const testPortfolio = { userId: 2, pmId: userId };
+
       prisma.user.findUnique = jest.fn().mockReturnValue({ id: 2 });
       prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId });
       prisma.portfolio.update = jest.fn().mockReturnValue(testPortfolio);
 
       const portfolio = await service.linkPortfolio(portfolioId, userId, email);
+      expect(portfolio).toEqual(testPortfolio);
+    });
+  });
+
+  describe('unlinkPortfolio', () => {
+    const portfolioId = 1;
+    const userId = 1;
+
+    it('throws an error if portfolio not found', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.unlinkPortfolio(portfolioId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to unlink the portfolio', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ pmId: 3 });
+
+      let error: Error;
+      try {
+        await service.unlinkPortfolio(portfolioId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('returns linked portfolio', async () => {
+      const testPortfolio = { userId, pmId: null };
+
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ pmId: userId });
+      prisma.portfolio.update = jest.fn().mockReturnValue(testPortfolio);
+
+      const portfolio = await service.unlinkPortfolio(portfolioId, userId);
       expect(portfolio).toEqual(testPortfolio);
     });
   });
