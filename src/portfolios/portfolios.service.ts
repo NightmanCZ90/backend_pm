@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { Portfolio } from '@prisma/client';
 import { ExtendedPortfolio, UsersPortfolios } from '../common/types/portfolios';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePortfolioDto } from './dtos';
+import { CreatePortfolioDto, UpdatePortfolioDto } from './dtos';
 
 const userWithoutPassword = {
   id: true,
@@ -93,6 +93,39 @@ export class PortfoliosService {
     }
 
     return portfolio;
+  }
+
+  async updatePortfolio(
+    portfolioId: number,
+    userId: number,
+    dto: UpdatePortfolioDto,
+  ): Promise<ExtendedPortfolio> {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: portfolioId }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException();
+    }
+
+    if (portfolio.userId !== userId && portfolio.pmId !== userId) {
+      throw new UnauthorizedException("You don't have permission to update this portfolio.");
+    }
+
+    const updatedPortfolio = await this.prisma.portfolio.update({
+      where: { id: portfolioId },
+      data: {
+        updatedAt: new Date(),
+        ...dto,
+      },
+      include: {
+        user: { select: userWithoutPassword },
+        portfolioManager: { select: userWithoutPassword },
+        transactions: true,
+      }
+    });
+
+    return updatedPortfolio;
   }
 
   async deletePortfolio(

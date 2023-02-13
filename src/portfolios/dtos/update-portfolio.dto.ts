@@ -1,6 +1,6 @@
 import { IsHexColor, IsNotEmpty, IsNumber, IsOptional, IsString, Length } from "class-validator";
 
-export class CreatePortfolioDto {
+export class UpdatePortfolioDto {
   @IsString()
   @IsNotEmpty()
   @Length(1, 20, { message: 'Max length of portfolio name is 20 chars.' })
@@ -19,8 +19,4 @@ export class CreatePortfolioDto {
   @IsString()
   @IsOptional()
   url: string;
-
-  @IsNumber()
-  @IsOptional()
-  investorId: number | null;
 }
