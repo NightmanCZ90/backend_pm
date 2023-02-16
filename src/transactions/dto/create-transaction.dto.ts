@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsDate, IsDecimal, IsISO4217CurrencyCode, IsNotEmpty, IsNumber, IsNumberString, IsOptional, IsString, Length, Validate } from 'class-validator';
+import { IsDate, IsDecimal, IsISO4217CurrencyCode, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Validate } from 'class-validator';
 import { ExecutionType, TransactionType } from '../../common/types/transactions';
 import { ValidateExecution, ValidateTransaction } from '../decorators';
 
