@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionType, TransactionType } from '../common/types/transactions';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTransactionDto } from './dto';
+import { CreateTransactionDto, UpdateTransactionDto } from './dto';
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
 
@@ -100,6 +100,87 @@ describe('TransactionsController', () => {
       prisma.transaction.create = jest.fn().mockReturnValue(dto);
 
       const transaction = await controller.createTransaction(user, dto);
+      expect(transaction).toEqual(dto);
+    });
+  });
+
+  describe('updateTransaction', () => {
+    const transactionId = 10;
+    const dto: UpdateTransactionDto = {
+      stockName: "ASTR",
+      stockSector: "Technology",
+      transactionTime: "2022-03-24T23:53:58.454Z",
+      transactionType: TransactionType.Buy,
+      numShares: 20,
+      price: 22.1,
+      notes: null,
+      currency: "USD",
+      execution: ExecutionType.FIFO,
+      commissions: null,
+      portfolioId: 1
+    };
+
+    it('throws an error if portfolio does not exist', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await controller.updateTransaction(transactionId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if transaction not found in portfolio', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ transactions: [] });
+
+      let error: Error;
+      try {
+        await controller.updateTransaction(transactionId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to update transaction in portfolio as portfolio manager', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: user.userId, pmId: 3, transactions: [dto] });
+
+      let error: Error;
+      try {
+        await controller.updateTransaction(transactionId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('throws an error if user not authorized to update transaction in portfolio', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: null, transactions: [dto] });
+
+      let error: Error;
+      try {
+        await controller.updateTransaction(transactionId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('returns updated transaction to portfolio if user is its portfolio manager', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: user.userId, transactions: [dto] });
+      prisma.transaction.update = jest.fn().mockReturnValue(dto);
+
+      const transaction = await controller.updateTransaction(transactionId, user, dto);
+      expect(transaction).toEqual(dto);
+    });
+
+    it('returns updated transaction to portfolio if user is its investor with no pm', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: user.userId, pmId: null, transactions: [dto] });
+      prisma.transaction.update = jest.fn().mockReturnValue(dto);
+
+      const transaction = await controller.updateTransaction(transactionId, user, dto);
       expect(transaction).toEqual(dto);
     });
   });
