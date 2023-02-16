@@ -1,4 +1,4 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionType, TransactionType } from '../common/types/transactions';
 import { prismaMock } from '../prisma/prisma.mock';
@@ -64,7 +64,7 @@ describe('TransactionsService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('throws an error if user not authorized to add transaction to portfolio', async () => {
@@ -76,7 +76,7 @@ describe('TransactionsService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns created transaction to portfolio if user is its portfolio manager', async () => {

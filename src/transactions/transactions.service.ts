@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Transaction } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTransactionDto } from './dto';
+import { CreateTransactionDto, UpdateTransactionDto } from './dto';
 
 @Injectable()
 export class TransactionsService {
@@ -22,11 +22,11 @@ export class TransactionsService {
     }
 
     if (portfolio.pmId && portfolio.pmId !== userId) {
-      throw new UnauthorizedException("Transaction creation is only allowed by its portfolio manager.");
+      throw new ForbiddenException("Transaction creation is only allowed by its portfolio manager.");
     }
 
     if (!portfolio.pmId && portfolio.userId !== userId) {
-      throw new UnauthorizedException("You don't have permission to create transaction to this portfolio.");
+      throw new ForbiddenException("You don't have permission to create transaction to this portfolio.");
     }
 
     const transaction = await this.prisma.transaction.create({
