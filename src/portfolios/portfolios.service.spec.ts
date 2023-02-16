@@ -1,4 +1,4 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
@@ -111,7 +111,7 @@ describe('PortfoliosService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns portfolio if user is its investor', async () => {
@@ -160,7 +160,7 @@ describe('PortfoliosService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('updates portfolio if user is its investor', async () => {
@@ -205,7 +205,7 @@ describe('PortfoliosService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('deletes portfolio if user is its investor', async () => {
@@ -258,7 +258,7 @@ describe('PortfoliosService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('confirms portfolio if user is its investor', async () => {
@@ -313,7 +313,7 @@ describe('PortfoliosService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns linked portfolio', async () => {
@@ -353,7 +353,7 @@ describe('PortfoliosService', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns linked portfolio', async () => {
