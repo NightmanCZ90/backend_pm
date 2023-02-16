@@ -37,4 +37,41 @@ export class TransactionsService {
 
     return transaction;
   }
+
+  async updateTransaction(
+    transactionId: number,
+    userId: number,
+    dto: UpdateTransactionDto,
+  ) {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { id: dto.portfolioId },
+      include: { transactions: { where: { id: transactionId } } }
+    });
+
+    if (!portfolio) {
+      throw new NotFoundException('Portfolio not found.');
+    }
+
+    if (!portfolio.transactions || portfolio.transactions?.length === 0) {
+      throw new NotFoundException('This transaction does not belong to this selected portfolio.');
+    }
+
+    if (portfolio.pmId && portfolio.pmId !== userId) {
+      throw new ForbiddenException("Transaction update is only allowed by its portfolio manager.");
+    }
+
+    if (!portfolio.pmId && portfolio.userId !== userId) {
+      throw new ForbiddenException("You don't have permission to update transaction to this portfolio.");
+    }
+
+    const transaction = await this.prisma.transaction.update({
+      where: { id: transactionId },
+      data: {
+        updatedAt: new Date(),
+        ...dto,
+      }
+    });
+
+    return transaction;
+  }
 }
