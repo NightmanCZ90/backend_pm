@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { CreateTransactionDto, UpdateTransactionDto } from './dto';
@@ -28,5 +28,14 @@ export class TransactionsController {
     @Body() dto: UpdateTransactionDto,
   ) {
     return this.transactionsService.updateTransaction(id, user.userId, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteTransaction(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: Express.User,
+  ) {
+    return this.transactionsService.deleteTransaction(id, user.userId);
   }
 }

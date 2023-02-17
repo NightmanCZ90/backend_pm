@@ -74,4 +74,37 @@ export class TransactionsService {
 
     return transaction;
   }
+
+  async deleteTransaction(
+    transactionId: number,
+    userId: number,
+  ): Promise<void> {
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { id: transactionId },
+      include: {
+        portfolio: {
+          select: {
+            userId: true,
+            pmId: true,
+          }
+        }
+      }
+    });
+
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found.');
+    }
+
+    if (transaction.portfolio.pmId && transaction.portfolio.pmId !== userId) {
+      throw new ForbiddenException("Transaction deletion is only allowed by its portfolio manager.");
+    }
+
+    if (!transaction.portfolio.pmId && transaction.portfolio.userId !== userId) {
+      throw new ForbiddenException("You don't have permission to delete this transaction.");
+    }
+
+    await this.prisma.transaction.delete({
+      where: { id: transactionId }
+    });
+  }
 }
