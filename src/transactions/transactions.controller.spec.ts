@@ -184,4 +184,76 @@ describe('TransactionsController', () => {
       expect(transaction).toEqual(dto);
     });
   });
+
+  describe('deleteTransaction', () => {
+    const transactionId = 10;
+
+    it('throws an error if transaction does not exist', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await controller.deleteTransaction(transactionId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to delete transaction in portfolio as portfolio manager', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId: user.userId, pmId: 3 }
+      });
+
+      let error: Error;
+      try {
+        await controller.deleteTransaction(transactionId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('throws an error if user not authorized to delete transaction in portfolio', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId: 2, pmId: null }
+      });
+
+      let error: Error;
+      try {
+        await controller.deleteTransaction(transactionId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('deletes transaction if user is its investor with no pm', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId: user.userId, pmId: null }
+      });
+
+      let error: Error;
+      try {
+        await controller.deleteTransaction(transactionId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toEqual(undefined);
+    });
+
+    it('deletes transaction if user is its portfolio manager', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId: 2, pmId: user.userId }
+      });
+
+      let error: Error;
+      try {
+        await controller.deleteTransaction(transactionId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toEqual(undefined);
+    });
+  });
 });

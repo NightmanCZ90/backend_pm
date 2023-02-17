@@ -137,7 +137,7 @@ describe('TransactionsService', () => {
       expect(error).toBeInstanceOf(NotFoundException);
     });
 
-    it('throws an error if user not authorized to update transaction in portfolio as portfolio manager', async () => {
+    it('throws an error if user not authorized to update transaction in portfolio with pm', async () => {
       prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId, pmId: 3, transactions: [dto] });
 
       let error: Error;
@@ -175,6 +175,79 @@ describe('TransactionsService', () => {
 
       const transaction = await service.updateTransaction(transactionId, userId, dto);
       expect(transaction).toEqual(dto);
+    });
+  });
+
+  describe('deleteTransaction', () => {
+    const transactionId = 10;
+    const userId = 1;
+
+    it('throws an error if transaction does not exist', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue(null);
+
+      let error: Error;
+      try {
+        await service.deleteTransaction(transactionId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if user not authorized to delete transaction in portfolio as portfolio manager', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId, pmId: 3 }
+      });
+
+      let error: Error;
+      try {
+        await service.deleteTransaction(transactionId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('throws an error if user not authorized to delete transaction in portfolio', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId: 2, pmId: null }
+      });
+
+      let error: Error;
+      try {
+        await service.deleteTransaction(transactionId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('deletes transaction if user is its investor with no pm', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId, pmId: null }
+      });
+
+      let error: Error;
+      try {
+        await service.deleteTransaction(transactionId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toEqual(undefined);
+    });
+
+    it('deletes transaction if user is its portfolio manager', async () => {
+      prisma.transaction.findUnique = jest.fn().mockReturnValue({
+        portfolio: { userId: 2, pmId: userId }
+      });
+
+      let error: Error;
+      try {
+        await service.deleteTransaction(transactionId, userId);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toEqual(undefined);
     });
   });
 });
