@@ -140,7 +140,11 @@ export class PortfoliosService {
       throw new NotFoundException();
     }
 
-    if (portfolio.userId !== userId && portfolio.pmId !== userId) {
+    if (portfolio.pmId && portfolio.pmId !== userId) {
+      throw new ForbiddenException("Portfolio deletion is only allowed by its portfolio manager.");
+    }
+
+    if (!portfolio.pmId && portfolio.userId !== userId) {
       throw new ForbiddenException("You don't have permission to delete this portfolio.");
     }
 
