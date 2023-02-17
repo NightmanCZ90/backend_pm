@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { Serialize } from '../common/interceptors/serialize.interceptor';
@@ -44,7 +44,7 @@ export class UsersController {
     @CurrentUser() user: Express.User
   ) {
     if (id !== user.userId) {
-      throw new UnauthorizedException('Cannot update another user.');
+      throw new ForbiddenException('Cannot update another user.');
     }
     return this.usersService.updateUser(id, dto);
   }

@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatu
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { CreatePortfolioDto, UpdatePortfolioDto } from './dtos';
-import { LinkPortfolioDto } from './dtos/link-portfolio.dto';
+import { LinkPortfolioDto } from './dtos';
 import { PortfoliosService } from './portfolios.service';
 
 @UseGuards(JwtGuard)

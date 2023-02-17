@@ -1,4 +1,4 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Role } from '../common/types/user';
 import { prismaMock } from '../prisma/prisma.mock';
@@ -115,7 +115,7 @@ describe('UserController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('throws an error if user not found', async () => {

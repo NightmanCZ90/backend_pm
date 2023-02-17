@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Portfolio } from '@prisma/client';
 import { ExtendedPortfolio, UsersPortfolios } from '../common/types/portfolios';
 import { PrismaService } from '../prisma/prisma.service';
@@ -89,7 +89,7 @@ export class PortfoliosService {
     }
 
     if (portfolio.userId !== userId && portfolio.pmId !== userId) {
-      throw new UnauthorizedException("You don't have permission to receive this portfolio.");
+      throw new ForbiddenException("You don't have permission to receive this portfolio.");
     }
 
     return portfolio;
@@ -109,7 +109,7 @@ export class PortfoliosService {
     }
 
     if (portfolio.userId !== userId && portfolio.pmId !== userId) {
-      throw new UnauthorizedException("You don't have permission to update this portfolio.");
+      throw new ForbiddenException("You don't have permission to update this portfolio.");
     }
 
     const updatedPortfolio = await this.prisma.portfolio.update({
@@ -140,8 +140,12 @@ export class PortfoliosService {
       throw new NotFoundException();
     }
 
-    if (portfolio.userId !== userId && portfolio.pmId !== userId) {
-      throw new UnauthorizedException("You don't have permission to delete this portfolio.");
+    if (portfolio.pmId && portfolio.pmId !== userId) {
+      throw new ForbiddenException("Portfolio deletion is only allowed by its portfolio manager.");
+    }
+
+    if (!portfolio.pmId && portfolio.userId !== userId) {
+      throw new ForbiddenException("You don't have permission to delete this portfolio.");
     }
 
     await this.prisma.portfolio.delete({
@@ -162,7 +166,7 @@ export class PortfoliosService {
     }
 
     if (portfolio.userId !== userId) {
-      throw new UnauthorizedException("You don't have permission to confirm this portfolio.");
+      throw new ForbiddenException("You don't have permission to confirm this portfolio.");
     }
 
     const confirmedPortfolio = await this.prisma.portfolio.update({
@@ -203,7 +207,7 @@ export class PortfoliosService {
     }
 
     if (portfolio.userId !== userId) {
-      throw new UnauthorizedException("You don't have permission to link this portfolio.");
+      throw new ForbiddenException("You don't have permission to link this portfolio.");
     }
 
     const linkedPortfolio = await this.prisma.portfolio.update({
@@ -237,7 +241,7 @@ export class PortfoliosService {
     }
 
     if (portfolio.pmId !== userId) {
-      throw new UnauthorizedException("You don't have permission to unlink this portfolio.");
+      throw new ForbiddenException("You don't have permission to unlink this portfolio.");
     }
 
     const unlinkedPortfolio = await this.prisma.portfolio.update({

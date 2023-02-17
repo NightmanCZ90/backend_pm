@@ -4,7 +4,14 @@ import { Role } from "../../common/types/user";
 @ValidatorConstraint()
 export class ValidateRole implements ValidatorConstraintInterface {
   validate(role: Role) {
-    return isIn(role, [Role.Administrator, Role.PortfolioManager, Role.Investor]);
+    return isIn(
+      role,
+      [
+        Role.Administrator,
+        Role.PortfolioManager,
+        Role.Investor
+      ]
+    );
   }
 
   defaultMessage() {

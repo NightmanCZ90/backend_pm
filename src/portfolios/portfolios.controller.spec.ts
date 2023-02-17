@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
@@ -130,7 +130,7 @@ describe('PortfoliosController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns portfolio if user is its investor', async () => {
@@ -178,7 +178,7 @@ describe('PortfoliosController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('updates portfolio if user is its investor', async () => {
@@ -213,8 +213,8 @@ describe('PortfoliosController', () => {
       expect(error).toBeInstanceOf(NotFoundException);
     });
 
-    it('throws an error if user not authorized to delete the portfolio', async () => {
-      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: 2 });
+    it('throws an error if user not authorized to delete the portfolio with no pm', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: null });
 
       let error: Error;
       try {
@@ -222,11 +222,23 @@ describe('PortfoliosController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
-    it('deletes portfolio if user is its investor', async () => {
-      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: user.userId, pmId: 2 });
+    it('throws an error if user not authorized to delete the portfolio with pm', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 2, pmId: 3 });
+
+      let error: Error;
+      try {
+        await controller.deletePortfolio(portfolioId, user);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(ForbiddenException);
+    });
+
+    it('deletes portfolio if user is its investor with no pm', async () => {
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: user.userId, pmId: null });
 
       let error: Error;
       try {
@@ -274,7 +286,7 @@ describe('PortfoliosController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('confirms portfolio if user is its investor', async () => {
@@ -330,7 +342,7 @@ describe('PortfoliosController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns linked portfolio', async () => {
@@ -369,7 +381,7 @@ describe('PortfoliosController', () => {
       } catch (err) {
         error = err;
       }
-      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect(error).toBeInstanceOf(ForbiddenException);
     });
 
     it('returns linked portfolio', async () => {
