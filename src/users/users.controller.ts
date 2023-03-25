@@ -2,7 +2,7 @@ import { Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Param,
 import { CurrentUser } from '../common/decorators';
 import { JwtGuard } from '../common/guards';
 import { Serialize } from '../common/interceptors/serialize.interceptor';
-import { ConfirmUserDto, UpdateUserDto } from './dto';
+import { CheckUserDto, UpdateUserDto } from './dto';
 import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
@@ -49,11 +49,11 @@ export class UsersController {
     return this.usersService.updateUser(id, dto);
   }
 
-  @Post('confirm')
+  @Post('check')
   @HttpCode(HttpStatus.OK)
-  getUserToConfirm(
-    @Body() dto: ConfirmUserDto
+  checkUser(
+    @Body() dto: CheckUserDto
   ) {
-    return this.usersService.getUserToConfirm(dto.email);
+    return this.usersService.checkUser(dto.email);
   }
 }

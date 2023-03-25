@@ -57,7 +57,7 @@ export class UsersService {
     return user;
   }
 
-  async getUserToConfirm(email: string): Promise<number> {
+  async checkUser(email: string): Promise<number> {
     const user = await this.prisma.user.findUnique({
       where: { email }
     });

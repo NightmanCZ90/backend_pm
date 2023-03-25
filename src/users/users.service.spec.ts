@@ -126,7 +126,7 @@ describe('UserService', () => {
 
       let error: Error;
       try {
-        await service.getUserToConfirm('test1@test.com');
+        await service.checkUser('test1@test.com');
       } catch (err) {
         error = err;
       }
@@ -136,7 +136,7 @@ describe('UserService', () => {
     it('returns user id', async () => {
       prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
 
-      const userId = await service.getUserToConfirm('test1@test.com');
+      const userId = await service.checkUser('test1@test.com');
       expect(userId).toEqual(1);
     });
   });

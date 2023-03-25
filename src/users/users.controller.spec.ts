@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Role } from '../common/types/user';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfirmUserDto, UpdateUserDto } from './dto';
+import { CheckUserDto, UpdateUserDto } from './dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
@@ -139,7 +139,7 @@ describe('UserController', () => {
   });
 
   describe('getUserToConfirm', () => {
-    const dto: ConfirmUserDto = {
+    const dto: CheckUserDto = {
       email: 'test1@test.com',
     };
 
@@ -148,7 +148,7 @@ describe('UserController', () => {
 
       let error: Error;
       try {
-        await controller.getUserToConfirm(dto);
+        await controller.checkUser(dto);
       } catch (err) {
         error = err;
       }
@@ -158,7 +158,7 @@ describe('UserController', () => {
     it('returns user id', async () => {
       prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
 
-      const userId = await controller.getUserToConfirm(dto);
+      const userId = await controller.checkUser(dto);
       expect(userId).toEqual(1);
     });
   });
