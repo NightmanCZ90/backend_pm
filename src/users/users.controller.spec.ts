@@ -138,7 +138,7 @@ describe('UserController', () => {
     });
   });
 
-  describe('getUserToConfirm', () => {
+  describe('checkUser', () => {
     const dto: CheckUserDto = {
       email: 'test1@test.com',
     };
@@ -159,7 +159,7 @@ describe('UserController', () => {
       prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
 
       const userId = await controller.checkUser(dto);
-      expect(userId).toEqual(1);
+      expect(userId).toEqual({ id: 1 });
     });
   });
 });

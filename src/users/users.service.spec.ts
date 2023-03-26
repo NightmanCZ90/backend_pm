@@ -120,7 +120,7 @@ describe('UserService', () => {
     });
   });
 
-  describe('getUserToConfirm', () => {
+  describe('checkUser', () => {
     it('throws an error if user not found', async () => {
       prisma.user.findUnique = jest.fn().mockReturnValue(null);
 
@@ -137,7 +137,7 @@ describe('UserService', () => {
       prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
 
       const userId = await service.checkUser('test1@test.com');
-      expect(userId).toEqual(1);
+      expect(userId).toEqual({ id: 1 });
     });
   });
 });

@@ -57,7 +57,7 @@ export class UsersService {
     return user;
   }
 
-  async checkUser(email: string): Promise<number> {
+  async checkUser(email: string): Promise<{ id: number }> {
     const user = await this.prisma.user.findUnique({
       where: { email }
     });
@@ -66,6 +66,6 @@ export class UsersService {
       throw new NotFoundException('User with this email does not exist.');
     }
 
-    return user.id;
+    return { id: user.id };
   }
 }
