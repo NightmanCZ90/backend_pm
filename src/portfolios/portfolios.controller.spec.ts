@@ -319,6 +319,19 @@ describe('PortfoliosController', () => {
       expect(error).toBeInstanceOf(NotFoundException);
     });
 
+    it('throws an error if linking to yourself', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 1, pmId: null });
+
+      let error: Error;
+      try {
+        await controller.linkPortfolio(portfolioId, user, dto);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(BadRequestException);
+    });
+
     it('throws an error if portfolio not found', async () => {
       prisma.user.findUnique = jest.fn().mockReturnValue({ id: 2 });
       prisma.portfolio.findUnique = jest.fn().mockReturnValue(null);

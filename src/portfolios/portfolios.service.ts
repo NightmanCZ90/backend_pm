@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Portfolio } from '@prisma/client';
 import { ExtendedPortfolio, UsersPortfolios } from '../common/types/portfolios';
 import { PrismaService } from '../prisma/prisma.service';
@@ -196,6 +196,10 @@ export class PortfoliosService {
 
     if (!investor) {
       throw new NotFoundException('User with this email does not exist.');
+    }
+
+    if (userId === investor.id) {
+      throw new BadRequestException('Cannot link portfolio to yourself.');
     }
 
     const portfolio = await this.prisma.portfolio.findUnique({

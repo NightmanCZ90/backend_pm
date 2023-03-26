@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { prismaMock } from '../prisma/prisma.mock';
 import { PrismaService } from '../prisma/prisma.service';
@@ -300,6 +300,19 @@ describe('PortfoliosService', () => {
         error = err;
       }
       expect(error).toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws an error if linking to yourself', async () => {
+      prisma.user.findUnique = jest.fn().mockReturnValue({ id: 1 });
+      prisma.portfolio.findUnique = jest.fn().mockReturnValue({ userId: 1, pmId: null });
+
+      let error: Error;
+      try {
+        await service.linkPortfolio(portfolioId, userId, 'test@test.com');
+      } catch (err) {
+        error = err;
+      }
+      expect(error).toBeInstanceOf(BadRequestException);
     });
 
     it('throws an error if portfolio not found', async () => {
